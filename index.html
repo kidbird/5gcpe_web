@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G CPE Web配置</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">5G CPE</span>
+                    <span class="logo-subtitle">Web配置</span>
+                </div>
+            </div>
+            <nav class="menu">
+                <ul class="menu-list">
+                    <li class="menu-item active" data-module="status">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M3 9H21" stroke="currentColor" stroke-width="2"/>
+                            <path d="M9 21V9" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>设备状态</span>
+                    </li>
+                    <li class="menu-item" data-module="lan">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="7" width="20" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M6 17V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M10 17V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M14 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M18 17V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>本地网络</span>
+                    </li>
+                    <li class="menu-item" data-module="cellular">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 4H14L20 10V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V6C4 4.9 4.9 4 6 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 4V10H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 14V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M10 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>蜂窝网络</span>
+                    </li>
+                    <li class="menu-item" data-module="wlan">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12.55C5.5 12.2 6 12 6.5 12C7.88 12 9 13.12 9 14.5C9 15.88 7.88 17 6.5 17C5.5 17 4.5 16.2 4 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8.5 10.5C9.88 10.5 11 11.62 11 13C11 14.38 9.88 15.5 8.5 15.5C7.12 15.5 6 14.38 6 13C6 11.62 7.12 10.5 8.5 10.5Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 4C14.5 4 16.5 5.5 17.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="12" cy="20" r="2" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>WLAN</span>
+                    </li>
+                    <li class="menu-item" data-module="firewall">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 22S20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 13V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="12" cy="10" r="1" fill="currentColor"/>
+                        </svg>
+                        <span>防火墙</span>
+                    </li>
+                    <li class="menu-item" data-module="vpn">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>VPN</span>
+                    </li>
+                    <li class="menu-item" data-module="iot">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M9 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M9 17H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="18" cy="14" r="3" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>IOT</span>
+                    </li>
+                    <li class="menu-item" data-module="system">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 1V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 20V23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M4.22 4.22L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M17.66 17.66L19.78 19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M1 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M20 12H23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M4.22 19.78L6.34 17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M17.66 6.34L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>系统</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="device-info">
+                    <span class="device-name">5G CPE Pro</span>
+                    <span class="device-model">Model: CPE-5G01</span>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">
+                    <h1 id="page-title">设备状态</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="refresh-btn" title="刷新">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M23 4V10H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M1 20V14H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3.51 9C4.01717 7.56678 4.87913 6.2854 6.01547 5.27542C7.1518 4.26543 8.52547 3.55976 10.0083 3.22426C11.4911 2.88875 13.0348 2.93434 14.4952 3.35677C15.9556 3.77921 17.2853 4.56471 18.36 5.64L23 10M1 14L5.64 18.36C6.71475 19.4353 8.04437 20.2208 9.50481 20.6432C10.9652 21.0657 12.5089 21.1112 13.9917 20.7757C15.4745 20.4402 16.8482 19.7346 17.9845 18.7246C19.1209 17.7146 19.9828 16.4332 20.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="header-btn" id="save-btn" title="保存设置">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M17 21V13H7V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 3V8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content" id="content-area">
+                <!-- 设备状态 -->
+                <section class="module-page active" id="page-status">
+                    <div class="status-cards">
+                        <div class="status-card">
+                            <div class="status-icon online">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">设备状态</span>
+                                <span class="status-value online">在线</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon network">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 12.55C5.5 12.2 6 12 6.5 12C7.88 12 9 13.12 9 14.5C9 15.88 7.88 17 6.5 17C5.5 17 4.5 16.2 4 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M8.5 10.5C9.88 10.5 11 11.62 11 13C11 14.38 9.88 15.5 8.5 15.5C7.12 15.5 6 14.38 6 13C6 11.62 7.12 10.5 8.5 10.5Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 4C14.5 4 16.5 5.5 17.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">网络类型</span>
+                                <span class="status-value">5G NR</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon mode">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 1V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 20V23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M4.22 4.22L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M17.66 17.66L19.78 19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M1 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M20 12H23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M4.22 19.78L6.34 17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M17.66 6.34L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">工作模式</span>
+                                <span class="status-value mode-router">路由模式</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon uptime">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">运行时间</span>
+                                <span class="status-value">3天 14时 32分</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon network">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="2" y="7" width="20" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M6 17V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M10 17V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M14 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M18 17V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">LAN IP</span>
+                                <span class="status-value">192.168.1.1</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon network">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">WAN IPv4</span>
+                                <span class="status-value">10.23.45.67</span>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon network">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="status-info">
+                                <span class="status-label">WAN IPv6</span>
+                                <span class="status-value">240e:1234:abcd::1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3 class="section-title">设备信息</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">设备型号</span>
+                                <span class="info-value">CPE-5G01</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">固件版本</span>
+                                <span class="info-value">V2.1.5</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">IMEI</span>
+                                <span class="info-value">861234567890123</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">ICCID</span>
+                                <span class="info-value">8986012345678901234</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3 class="section-title">蜂窝网络</h3>
+                        <div class="sim-status">
+                            <div class="sim-info-item">
+                                <span class="sim-label">SIM卡状态</span>
+                                <span class="sim-value success">已插入</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">运营商</span>
+                                <span class="sim-value">中国移动</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">MCC</span>
+                                <span class="sim-value">460</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">MNC</span>
+                                <span class="sim-value">00</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">当前Band</span>
+                                <span class="sim-value">n78</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">ARFCN</span>
+                                <span class="sim-value">627264</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">Cell ID</span>
+                                <span class="sim-value">0x12345678</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">PCI</span>
+                                <span class="sim-value">120</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">CQI</span>
+                                <span class="sim-value">12</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">RSRP</span>
+                                <span class="sim-value">-72 dBm</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">RSRQ</span>
+                                <span class="sim-value">-10 dB</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">SINR</span>
+                                <span class="sim-value">15 dB</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">ANT0</span>
+                                <span class="sim-value">-65 dBm</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">ANT1</span>
+                                <span class="sim-value">-68 dBm</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">ANT2</span>
+                                <span class="sim-value">-70 dBm</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">ANT3</span>
+                                <span class="sim-value">-72 dBm</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">下行签约带宽</span>
+                                <span class="sim-value">1000 Mbps</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">上行签约带宽</span>
+                                <span class="sim-value">200 Mbps</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">上行流量</span>
+                                <span class="sim-value">125.4 MB</span>
+                            </div>
+                            <div class="sim-info-item">
+                                <span class="sim-label">下行流量</span>
+                                <span class="sim-value">892.7 MB</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3 class="section-title">设备列表</h3>
+                        <div class="connected-devices">
+                            <div class="device-row header">
+                                <span>IP地址</span>
+                                <span>MAC地址</span>
+                            </div>
+                            <div class="device-row">
+                                <span>192.168.1.100</span>
+                                <span>AA:BB:CC:DD:EE:01</span>
+                            </div>
+                            <div class="device-row">
+                                <span>192.168.1.101</span>
+                                <span>AA:BB:CC:DD:EE:02</span>
+                            </div>
+                            <div class="device-row">
+                                <span>192.168.1.102</span>
+                                <span>AA:BB:CC:DD:EE:03</span>
+                            </div>
+                            <div class="device-row">
+                                <span>192.168.1.103</span>
+                                <span>AA:BB:CC:DD:EE:04</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 本地网络 -->
+                <section class="module-page" id="page-lan">
+                    <div class="form-section">
+                        <h3 class="section-title">工作模式</h3>
+                        <div class="form-group">
+                            <label class="form-label">设备工作模式</label>
+                            <select class="form-select" id="work-mode">
+                                <option value="router">路由模式</option>
+                                <option value="bridge">桥接模式</option>
+                                <option value="mobile">移动宽带</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">LAN设置</h3>
+                        <div class="form-group">
+                            <label class="form-label">LAN IP地址</label>
+                            <input type="text" class="form-input" value="192.168.1.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">子网掩码</label>
+                            <input type="text" class="form-input" value="255.255.255.0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">DHCP服务器</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="dhcp-toggle" checked>
+                                <label for="dhcp-toggle"></label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">DHCP设置</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">起始IP</label>
+                                <input type="text" class="form-input" value="192.168.1.100">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">结束IP</label>
+                                <input type="text" class="form-input" value="192.168.1.200">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">DNS服务器</label>
+                            <input type="text" class="form-input" value="8.8.8.8, 8.8.4.4">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">租期（秒）</label>
+                            <input type="text" class="form-input" value="86400">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 蜂窝网络 -->
+                <section class="module-page" id="page-cellular">
+                    <div class="vpn-tabs">
+                        <button class="vpn-tab active" data-cellular="network">蜂窝网络配置</button>
+                        <button class="vpn-tab" data-cellular="apn">APN</button>
+                        <button class="vpn-tab" data-cellular="at">AT调试</button>
+                    </div>
+                    
+                    <div class="vpn-content active" id="cellular-network">
+                        <div class="form-section">
+                            <h3 class="section-title">网络模式</h3>
+                            <div class="form-group">
+                                <label class="form-label">首选网络类型</label>
+                                <select class="form-select">
+                                    <option>自动（5G SA+NSA/LTE）</option>
+                                    <option>5G SA</option>
+                                    <option>5G SA+NSA</option>
+                                    <option>LTE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">5G NR 频段</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" checked> n1</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n3</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n5</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n7</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n8</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n20</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n28</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n38</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n41</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n77</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n78</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> n79</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">LTE 频段</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" checked> B1</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B3</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B5</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B7</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B8</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B20</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B28</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B38</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B40</label>
+                                    <label class="checkbox-label"><input type="checkbox" checked> B41</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">飞行模式</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="flight-mode-toggle">
+                                    <label for="flight-mode-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">数据漫游</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="data-roaming-toggle">
+                                    <label for="data-roaming-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">硬件加速</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="hw-accel-toggle" checked>
+                                    <label for="hw-accel-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IMS</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="ims-toggle" checked>
+                                    <label for="ims-toggle"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="cellular-apn">
+                        <div class="form-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">APN列表</h3>
+                                <button class="btn btn-primary" id="add-apn-btn">添加APN</button>
+                            </div>
+                            <div class="apn-list" id="apn-list">
+                                <div class="apn-item" data-apn="1">
+                                    <div class="apn-header">
+                                        <span class="apn-name">cmnet (已激活)</span>
+                                        <span class="apn-status enabled">已激活</span>
+                                    </div>
+                                    <div class="apn-details">
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">APN名称</span>
+                                            <span class="apn-value">cmnet</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">用户名</span>
+                                            <span class="apn-value">-</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">密码</span>
+                                            <span class="apn-value">-</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">认证类型</span>
+                                            <span class="apn-value">无</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">承载类型</span>
+                                            <span class="apn-value">IPv4v6</span>
+                                        </div>
+                                    </div>
+                                    <div class="apn-actions">
+                                        <button class="btn btn-primary btn-sm edit-apn-btn">编辑</button>
+                                        <button class="btn btn-secondary btn-sm delete-apn-btn">删除</button>
+                                    </div>
+                                </div>
+                                <div class="apn-item" data-apn="2">
+                                    <div class="apn-header">
+                                        <span class="apn-name">cmwap</span>
+                                        <span class="apn-status disabled">未激活</span>
+                                    </div>
+                                    <div class="apn-details">
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">APN名称</span>
+                                            <span class="apn-value">cmwap</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">用户名</span>
+                                            <span class="apn-value">-</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">密码</span>
+                                            <span class="apn-value">-</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">认证类型</span>
+                                            <span class="apn-value">无</span>
+                                        </div>
+                                        <div class="apn-detail-row">
+                                            <span class="apn-label">承载类型</span>
+                                            <span class="apn-value">IP</span>
+                                        </div>
+                                    </div>
+                                    <div class="apn-actions">
+                                        <button class="btn btn-primary btn-sm edit-apn-btn">编辑</button>
+                                        <button class="btn btn-secondary btn-sm delete-apn-btn">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="cellular-at">
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label class="form-label">AT指令</label>
+                                <textarea class="form-input" id="at-command" rows="3" placeholder="输入AT指令，如：AT+CGREG?"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                                <button class="btn btn-primary" id="at-send-btn">发送</button>
+                                <button class="btn btn-secondary" id="at-clear-btn">清除</button>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">返回结果</label>
+                                <div class="at-result" id="at-result">
+                                    <pre>等待发送AT指令...</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WLAN -->
+                <section class="module-page" id="page-wlan">
+                    <div class="vpn-tabs">
+                        <button class="vpn-tab active" data-wlan="ap">AP模式</button>
+                        <button class="vpn-tab" data-wlan="sta">STA模式</button>
+                    </div>
+                    
+                    <div class="vpn-content active" id="wlan-ap">
+                        <div class="form-section">
+                            <h3 class="section-title">2.4GHz Wi-Fi</h3>
+                            <div class="form-group">
+                                <label class="form-label">SSID</label>
+                                <input type="text" class="form-input" value="CPE_5G_24G">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <div class="password-input">
+                                    <input type="password" class="form-input" value="12345678">
+                                    <button class="toggle-password">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 12S5 4 12 4C19 4 23 12 23 12S19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">无线开关</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="wifi24-toggle" checked>
+                                    <label for="wifi24-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">信道</label>
+                                <select class="form-select">
+                                    <option>自动</option>
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>6</option>
+                                    <option>11</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">5GHz Wi-Fi</h3>
+                            <div class="form-group">
+                                <label class="form-label">SSID</label>
+                                <input type="text" class="form-input" value="CPE_5G_5G">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <div class="password-input">
+                                    <input type="password" class="form-input" value="12345678">
+                                    <button class="toggle-password">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 12S5 4 12 4C19 4 23 12 23 12S19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">无线开关</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="wifi5-toggle" checked>
+                                    <label for="wifi5-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">信道</label>
+                                <select class="form-select">
+                                    <option>自动</option>
+                                    <option>36</option>
+                                    <option>40</option>
+                                    <option>44</option>
+                                    <option>48</option>
+                                    <option>149</option>
+                                    <option>153</option>
+                                    <option>157</option>
+                                    <option>161</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="wlan-sta">
+                        <div class="form-section">
+                            <h3 class="section-title">STA模式设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">STA使能</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="sta-toggle">
+                                    <label for="sta-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">频段选择</label>
+                                <select class="form-select">
+                                    <option>2.4GHz / 5GHz</option>
+                                    <option>仅2.4GHz</option>
+                                    <option>仅5GHz</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">扫描网络</h3>
+                            <div class="wifi-scan-list">
+                                <div class="wifi-scan-item">
+                                    <div class="wifi-scan-info">
+                                        <span class="wifi-ssid">MyHome_WiFi_5G</span>
+                                        <span class="wifi-signal">信号: 90%</span>
+                                    </div>
+                                    <span class="wifi-security">WPA2</span>
+                                </div>
+                                <div class="wifi-scan-item">
+                                    <div class="wifi-scan-info">
+                                        <span class="wifi-ssid">Office_5G</span>
+                                        <span class="wifi-signal">信号: 75%</span>
+                                    </div>
+                                    <span class="wifi-security">WPA3</span>
+                                </div>
+                                <div class="wifi-scan-item">
+                                    <div class="wifi-scan-info">
+                                        <span class="wifi-ssid">Neighbor_24G</span>
+                                        <span class="wifi-signal">信号: 60%</span>
+                                    </div>
+                                    <span class="wifi-security">WPA2</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" style="margin-top: 12px;">重新扫描</button>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">连接设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">SSID (要连接的无线网络)</label>
+                                <input type="text" class="form-input" placeholder="输入要连接的SSID">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <div class="password-input">
+                                    <input type="password" class="form-input" placeholder="无线网络密码">
+                                    <button class="toggle-password">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 12S5 4 12 4C19 4 23 12 23 12S19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">安全类型</label>
+                                <select class="form-select">
+                                    <option>WPA3-Personal</option>
+                                    <option>WPA2-Personal</option>
+                                    <option>WPA3-Enterprise</option>
+                                    <option>WPA2-Enterprise</option>
+                                    <option>无密码</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">WAN口设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">WAN获取方式</label>
+                                <select class="form-select">
+                                    <option>DHCP (自动获取)</option>
+                                    <option>静态IP</option>
+                                    <option>PPPoE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">WAN口MAC地址</label>
+                                <input type="text" class="form-input" value="00:1A:2B:3C:4D:5E">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">NAT转发</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="nat-toggle" checked>
+                                    <label for="nat-toggle"></label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">连接状态</h3>
+                            <div class="vpn-status">
+                                <span class="vpn-status-indicator disconnected">未连接</span>
+                            </div>
+                            <button class="btn btn-primary" style="margin-top: 12px;">连接</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 防火墙 -->
+                <section class="module-page" id="page-firewall">
+                    <div class="vpn-tabs">
+                        <button class="vpn-tab active" data-firewall="basic">基础设置</button>
+                        <button class="vpn-tab" data-firewall="port">端口转发</button>
+                    </div>
+                    
+                    <div class="vpn-content active" id="firewall-basic">
+                        <div class="form-section">
+                            <h3 class="section-title">防火墙设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">防火墙开关</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="firewall-toggle" checked>
+                                    <label for="firewall-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">SPI状态检测</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="spi-toggle" checked>
+                                    <label for="spi-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">DoS防护</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="dos-toggle" checked>
+                                    <label for="dos-toggle"></label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">DMZ主机</h3>
+                            <div class="form-group">
+                                <label class="form-label">启用DMZ</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="dmz-toggle">
+                                    <label for="dmz-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">DMZ主机IP</label>
+                                <input type="text" class="form-input" id="dmz-ip" placeholder="如：192.168.1.100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="firewall-port">
+                        <div class="form-section">
+                            <h3 class="section-title">端口转发</h3>
+                            <div class="port-forward-list" id="port-forward-list">
+                                <div class="port-forward-item" data-port="1">
+                                    <span class="port-info">TCP:8080 → 192.168.1.100:80</span>
+                                    <div class="port-actions">
+                                        <button class="btn btn-primary btn-sm edit-port-btn">编辑</button>
+                                        <button class="btn btn-secondary btn-sm delete-port-btn">删除</button>
+                                    </div>
+                                </div>
+                                <div class="port-forward-item" data-port="2">
+                                    <span class="port-info">TCP:2222 → 192.168.1.101:22</span>
+                                    <div class="port-actions">
+                                        <button class="btn btn-primary btn-sm edit-port-btn">编辑</button>
+                                        <button class="btn btn-secondary btn-sm delete-port-btn">删除</button>
+                                    </div>
+                                </div>
+                                <div class="port-forward-item" data-port="3">
+                                    <span class="port-info">UDP:3000 → 192.168.1.102:3000</span>
+                                    <div class="port-actions">
+                                        <button class="btn btn-primary btn-sm edit-port-btn">编辑</button>
+                                        <button class="btn btn-secondary btn-sm delete-port-btn">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="add-port-btn">添加端口转发规则</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VPN -->
+                <section class="module-page" id="page-vpn">
+                    <div class="vpn-tabs">
+                        <button class="vpn-tab active" data-vpn="pptp">PPTP/L2TP</button>
+                        <button class="vpn-tab" data-vpn="gre">GRE隧道</button>
+                        <button class="vpn-tab" data-vpn="eoip">EOIP</button>
+                        <button class="vpn-tab" data-vpn="ipsec">IPSec</button>
+                    </div>
+                    
+                    <div class="vpn-content active" id="vpn-pptp">
+                        <div class="form-section">
+                            <h3 class="section-title">PPTP/L2TP VPN设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">VPN类型</label>
+                                <select class="form-select">
+                                    <option>PPTP</option>
+                                    <option>L2TP/IPSec</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">服务器地址</label>
+                                <input type="text" class="form-input" placeholder="vpn.example.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">用户名</label>
+                                <input type="text" class="form-input" placeholder="username">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-input" placeholder="password">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">VPN状态</label>
+                                <div class="vpn-status">
+                                    <span class="vpn-status-indicator disconnected">未连接</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">连接VPN</button>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="vpn-gre">
+                        <div class="form-section">
+                            <h3 class="section-title">GRE隧道设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">GRE隧道使能</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="gre-toggle">
+                                    <label for="gre-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">本地GRE接口</label>
+                                <input type="text" class="form-input" placeholder="192.168.1.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">远程GRE地址</label>
+                                <input type="text" class="form-input" placeholder="203.0.113.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">隧道密钥</label>
+                                <input type="text" class="form-input" placeholder="可选">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">MTU</label>
+                                <input type="text" class="form-input" value="1476">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Keepalive</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="gre-keepalive" checked>
+                                    <label for="gre-keepalive"></label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">应用配置</button>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="vpn-eoip">
+                        <div class="form-section">
+                            <h3 class="section-title">EOIP隧道设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">EOIP隧道使能</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="eoip-toggle">
+                                    <label for="eoip-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tunnel ID</label>
+                                <input type="text" class="form-input" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">远程地址</label>
+                                <input type="text" class="form-input" placeholder="203.0.113.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">本地MAC地址</label>
+                                <input type="text" class="form-input" value="00:1A:2B:3C:4D:5E">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">隧道密钥</label>
+                                <input type="password" class="form-input" placeholder="secret">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">MTU</label>
+                                <input type="text" class="form-input" value="1500">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ARP代理</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="eoip-arp">
+                                    <label for="eoip-arp"></label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">应用配置</button>
+                        </div>
+                    </div>
+                    
+                    <div class="vpn-content" id="vpn-ipsec">
+                        <div class="form-section">
+                            <h3 class="section-title">IPSec设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">IPSec使能</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="ipsec-toggle">
+                                    <label for="ipsec-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">远程网关</label>
+                                <input type="text" class="form-input" placeholder="203.0.113.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">预共享密钥</label>
+                                <input type="password" class="form-input" placeholder="preshared key">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">本地标识</label>
+                                <input type="text" class="form-input" placeholder="本地IP或域名">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">远程标识</label>
+                                <input type="text" class="form-input" placeholder="远程IP或域名">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">阶段1提议 (IKE)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">加密算法</label>
+                                    <select class="form-select">
+                                        <option>AES-256</option>
+                                        <option>AES-192</option>
+                                        <option>AES-128</option>
+                                        <option>3DES</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">认证算法</label>
+                                    <select class="form-select">
+                                        <option>SHA-256</option>
+                                        <option>SHA-1</option>
+                                        <option>MD5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">DH组</label>
+                                    <select class="form-select">
+                                        <option>14 (2048-bit)</option>
+                                        <option>5 (1536-bit)</option>
+                                        <option>2 (1024-bit)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">生命周期</label>
+                                    <input type="text" class="form-input" value="3600">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">阶段2提议 (ESP)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">加密算法</label>
+                                    <select class="form-select">
+                                        <option>AES-256</option>
+                                        <option>AES-192</option>
+                                        <option>AES-128</option>
+                                        <option>3DES</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">认证算法</label>
+                                    <select class="form-select">
+                                        <option>SHA-256</option>
+                                        <option>SHA-1</option>
+                                        <option>MD5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">生命周期</label>
+                                <input type="text" class="form-input" value="3600">
+                            </div>
+                            <button class="btn btn-primary">应用配置</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- IOT -->
+                <section class="module-page" id="page-iot">
+                    <div class="form-section">
+                        <h3 class="section-title">IOT网关设置</h3>
+                        <div class="form-group">
+                            <label class="form-label">IOT服务使能</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="iot-toggle" checked>
+                                <label for="iot-toggle"></label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">协议类型</label>
+                            <select class="form-select">
+                                <option>MQTT</option>
+                                <option>CoAP</option>
+                                <option>HTTP</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">服务器地址</label>
+                            <input type="text" class="form-input" value="iot.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">端口</label>
+                            <input type="text" class="form-input" value="1883">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Client ID</label>
+                            <input type="text" class="form-input" value="cpe_iot_001">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">已连接设备</h3>
+                        <div class="device-list">
+                            <div class="device-item">
+                                <span class="device-icon">📱</span>
+                                <div class="device-details">
+                                    <span class="device-name">SmartSensor-01</span>
+                                    <span class="device-id">ID: IOT-001</span>
+                                </div>
+                                <span class="device-status online">在线</span>
+                            </div>
+                            <div class="device-item">
+                                <span class="device-icon">📱</span>
+                                <div class="device-details">
+                                    <span class="device-name">SmartSwitch-02</span>
+                                    <span class="device-id">ID: IOT-002</span>
+                                </div>
+                                <span class="device-status online">在线</span>
+                            </div>
+                            <div class="device-item">
+                                <span class="device-icon">📱</span>
+                                <div class="device-details">
+                                    <span class="device-name">TempSensor-03</span>
+                                    <span class="device-id">ID: IOT-003</span>
+                                </div>
+                                <span class="device-status offline">离线</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 系统 -->
+                <section class="module-page" id="page-system">
+                    <div class="form-section">
+                        <h3 class="section-title">系统设置</h3>
+                        <div class="form-group">
+                            <label class="form-label">设备名称</label>
+                            <input type="text" class="form-input" value="5G CPE Pro">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">时区</label>
+                            <select class="form-select">
+                                <option>Asia/Shanghai (UTC+8)</option>
+                                <option>Asia/Tokyo (UTC+9)</option>
+                                <option>America/New_York (UTC-5)</option>
+                                <option>Europe/London (UTC+0)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">NTP服务器</label>
+                            <input type="text" class="form-input" value="pool.ntp.org">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">管理设置</h3>
+                        <div class="form-group">
+                            <label class="form-label">Web管理端口</label>
+                            <input type="text" class="form-input" value="80">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">管理员用户名</label>
+                            <input type="text" class="form-input" value="admin">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">管理员密码</label>
+                            <input type="password" class="form-input" value="admin123">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">HTTPS</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="https-toggle">
+                                <label for="https-toggle"></label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">固件升级</h3>
+                        <div class="firmware-info">
+                            <div class="firmware-item">
+                                <span class="firmware-label">当前版本</span>
+                                <span class="firmware-value">V2.1.5</span>
+                            </div>
+                            <div class="firmware-item">
+                                <span class="firmware-label">最新版本</span>
+                                <span class="firmware-value">V2.1.5</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary">检查更新</button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">恢复与重启</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary">恢复出厂设置</button>
+                            <button class="btn btn-primary">重启设备</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <div class="modal-overlay" id="apn-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="apn-modal-title">添加APN</h3>
+                <button class="modal-close" id="apn-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">APN名称</label>
+                    <input type="text" class="form-input" id="apn-name-input" placeholder="请输入APN名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" id="apn-user-input" placeholder="可选">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-input" id="apn-pass-input" placeholder="可选">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">认证类型</label>
+                    <select class="form-select" id="apn-auth-select">
+                        <option value="none">无</option>
+                        <option value="pap">PAP</option>
+                        <option value="chap">CHAP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">承载类型</label>
+                    <select class="form-select" id="apn-bearer-select">
+                        <option value="IP">IP</option>
+                        <option value="IPv4v6">IPv4v6</option>
+                        <option value="Ethernet">Ethernet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">APN类型</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" id="apn-type-default" checked> default</label>
+                        <label class="checkbox-label"><input type="checkbox" id="apn-type-mms"> mms</label>
+                        <label class="checkbox-label"><input type="checkbox" id="apn-type-supl"> supl</label>
+                        <label class="checkbox-label"><input type="checkbox" id="apn-type-dun"> dun</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">激活</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="apn-active-check">
+                        <label for="apn-active-check"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="apn-save-btn">保存</button>
+                <button class="btn btn-secondary" id="apn-cancel-btn">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="port-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="port-modal-title">添加端口转发</h3>
+                <button class="modal-close" id="port-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">协议</label>
+                    <select class="form-select" id="port-protocol">
+                        <option value="TCP">TCP</option>
+                        <option value="UDP">UDP</option>
+                        <option value="TCP/UDP">TCP+UDP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">外部端口</label>
+                    <input type="text" class="form-input" id="port-external" placeholder="如：8080">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">内部IP地址</label>
+                    <input type="text" class="form-input" id="port-internal-ip" placeholder="如：192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">内部端口</label>
+                    <input type="text" class="form-input" id="port-internal" placeholder="如：80">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">描述</label>
+                    <input type="text" class="form-input" id="port-desc" placeholder="可选">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">启用</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="port-enabled" checked>
+                        <label for="port-enabled"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="port-save-btn">保存</button>
+                <button class="btn btn-secondary" id="port-cancel-btn">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
