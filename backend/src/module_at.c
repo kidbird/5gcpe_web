@@ -6,9 +6,7 @@
 
 static const char *module_type_names[] = {
     [MODULE_TYPE_UNKNOWN] = "unknown",
-    [MODULE_TYPE_QUECTEL_RG500U] = "quectel_rg500u",
-    [MODULE_TYPE_QUECTEL_RM500U] = "quectel_rm500u",
-    [MODULE_TYPE_QUECTEL_RG200U] = "quectel_rg200u",
+    [MODULE_TYPE_QUECTEL_RG500U_SERIES] = "quectel_rg500u",
     [MODULE_TYPE_QUECTEL_RM500Q] = "quectel_rm500q",
     [MODULE_TYPE_FIBOCOM_FM150] = "fibocom_fm150",
     [MODULE_TYPE_FIBOCOM_FM350] = "fibocom_fm350",
@@ -47,16 +45,13 @@ static const char *command_type_names[] = {
     [CMD_GET_BAND] = "get_band",
 };
 
-#define CMD_ENTRY(cmd_str, has_param, prefix) \
-    { .name = command_type_names[__COUNTER__ - 1], .at_cmd = cmd_str, .has_params = has_param, .response_prefix = prefix }
-
 #define CMD_SIMPLE(cmd_str)         { .at_cmd = cmd_str, .has_params = false, .response_prefix = NULL }
 #define CMD_PARAM(cmd_str, prefix)  { .at_cmd = cmd_str, .has_params = true, .response_prefix = prefix }
 
 static ModuleAtTable module_tables[] = {
-    [MODULE_TYPE_QUECTEL_RG500U] = {
-        .type = MODULE_TYPE_QUECTEL_RG500U,
-        .name = "RG500U-CN",
+    [MODULE_TYPE_QUECTEL_RG500U_SERIES] = {
+        .type = MODULE_TYPE_QUECTEL_RG500U_SERIES,
+        .name = "RG500U/RM500U/RG200U",
         .manufacturer = "Quectel",
         .supports_5g = true,
         .supports_wifi = true,
@@ -92,85 +87,9 @@ static ModuleAtTable module_tables[] = {
             [CMD_GET_BAND]       = CMD_SIMPLE("AT+QNWPREFCFG=\"nr5g_band\""),
         }
     },
-    [MODULE_TYPE_QUECTEL_RM500U] = {
-        .type = MODULE_TYPE_QUECTEL_RM500U,
-        .name = "RM500U-CN",
-        .manufacturer = "Quectel",
-        .supports_5g = true,
-        .supports_wifi = false,
-        .supports_gps = true,
-        .commands = {
-            [CMD_TEST]           = CMD_SIMPLE("AT"),
-            [CMD_GET_IMEI]       = CMD_SIMPLE("AT+GSN"),
-            [CMD_GET_ICCID]      = CMD_SIMPLE("AT+QCCID"),
-            [CMD_GET_IMSI]       = CMD_SIMPLE("AT+CIMI"),
-            [CMD_GET_SIGNAL]     = CMD_SIMPLE("AT+CSQ"),
-            [CMD_GET_OPERATOR]   = CMD_SIMPLE("AT+COPS?"),
-            [CMD_GET_NETMODE]    = CMD_SIMPLE("AT+CNMP?"),
-            [CMD_SET_NETMODE_AUTO]    = CMD_SIMPLE("AT+CNMP=2"),
-            [CMD_SET_NETMODE_5G_SA]   = CMD_SIMPLE("AT+CNMP=71"),
-            [CMD_SET_NETMODE_5G_NSA]  = CMD_SIMPLE("AT+CNMP=70"),
-            [CMD_SET_NETMODE_LTE]     = CMD_SIMPLE("AT+CNMP=61"),
-            [CMD_SET_APN]        = CMD_PARAM("AT+CGDCONT=1,\"IP\",\"%s\"", NULL),
-            [CMD_ACTIVATE_PDP]   = CMD_SIMPLE("AT+CGACT=1,1"),
-            [CMD_DEACTIVATE_PDP] = CMD_SIMPLE("AT+CGACT=0,1"),
-            [CMD_GET_CELL_INFO]  = CMD_SIMPLE("AT+QENG=\"servingcell\""),
-            [CMD_REBOOT]         = CMD_SIMPLE("AT+CFUN=1,1"),
-            [CMD_FACTORY_RESET]  = CMD_SIMPLE("AT&F"),
-            [CMD_WLAN_ENABLE]    = { .at_cmd = NULL },
-            [CMD_WLAN_DISABLE]   = { .at_cmd = NULL },
-            [CMD_WLAN_SET_AP]    = { .at_cmd = NULL },
-            [CMD_WLAN_SET_STA]   = { .at_cmd = NULL },
-            [CMD_WLAN_SCAN]      = { .at_cmd = NULL },
-            [CMD_GET_TEMP]       = CMD_SIMPLE("AT+QTEMP"),
-            [CMD_GET_VERSION]    = CMD_SIMPLE("AT+CGMR"),
-            [CMD_GET_RSRP]       = CMD_SIMPLE("AT+QRSRP"),
-            [CMD_GET_SINR]       = CMD_SIMPLE("AT+QSINR"),
-            [CMD_SET_BAND]       = CMD_PARAM("AT+QCFG=\"band\",%s", NULL),
-            [CMD_GET_BAND]       = CMD_SIMPLE("AT+QCFG=\"band\""),
-        }
-    },
-    [MODULE_TYPE_QUECTEL_RG200U] = {
-        .type = MODULE_TYPE_QUECTEL_RG200U,
-        .name = "RG200U-CN",
-        .manufacturer = "Quectel",
-        .supports_5g = true,
-        .supports_wifi = true,
-        .supports_gps = false,
-        .commands = {
-            [CMD_TEST]           = CMD_SIMPLE("AT"),
-            [CMD_GET_IMEI]       = CMD_SIMPLE("AT+GSN"),
-            [CMD_GET_ICCID]      = CMD_SIMPLE("AT+QCCID"),
-            [CMD_GET_IMSI]       = CMD_SIMPLE("AT+CIMI"),
-            [CMD_GET_SIGNAL]     = CMD_SIMPLE("AT+CSQ"),
-            [CMD_GET_OPERATOR]   = CMD_SIMPLE("AT+COPS?"),
-            [CMD_GET_NETMODE]    = CMD_SIMPLE("AT+CNMP?"),
-            [CMD_SET_NETMODE_AUTO]    = CMD_SIMPLE("AT+CNMP=2"),
-            [CMD_SET_NETMODE_5G_SA]   = CMD_SIMPLE("AT+CNMP=71"),
-            [CMD_SET_NETMODE_5G_NSA]  = CMD_SIMPLE("AT+CNMP=70"),
-            [CMD_SET_NETMODE_LTE]     = CMD_SIMPLE("AT+CNMP=61"),
-            [CMD_SET_APN]        = CMD_PARAM("AT+CGDCONT=1,\"IP\",\"%s\"", NULL),
-            [CMD_ACTIVATE_PDP]   = CMD_SIMPLE("AT+CGACT=1,1"),
-            [CMD_DEACTIVATE_PDP] = CMD_SIMPLE("AT+CGACT=0,1"),
-            [CMD_GET_CELL_INFO]  = CMD_SIMPLE("AT+QENG=\"servingcell\""),
-            [CMD_REBOOT]         = CMD_SIMPLE("AT+CFUN=1,1"),
-            [CMD_FACTORY_RESET]  = CMD_SIMPLE("AT&F"),
-            [CMD_WLAN_ENABLE]    = CMD_SIMPLE("AT+QWIFI=1"),
-            [CMD_WLAN_DISABLE]   = CMD_SIMPLE("AT+QWIFI=0"),
-            [CMD_WLAN_SET_AP]    = CMD_PARAM("AT+QAPCONFIG=1,\"%s\",%d,4,\"%s\"", NULL),
-            [CMD_WLAN_SET_STA]   = CMD_PARAM("AT+QWSTACONF=1,\"%s\",\"%s\"", NULL),
-            [CMD_WLAN_SCAN]      = CMD_SIMPLE("AT+QSCAN"),
-            [CMD_GET_TEMP]       = CMD_SIMPLE("AT+QTEMP"),
-            [CMD_GET_VERSION]    = CMD_SIMPLE("AT+CGMR"),
-            [CMD_GET_RSRP]       = CMD_SIMPLE("AT+QRSRP"),
-            [CMD_GET_SINR]       = CMD_SIMPLE("AT+QSINR"),
-            [CMD_SET_BAND]       = CMD_PARAM("AT+QCFG=\"band\",%s", NULL),
-            [CMD_GET_BAND]       = CMD_SIMPLE("AT+QCFG=\"band\""),
-        }
-    },
     [MODULE_TYPE_QUECTEL_RM500Q] = {
         .type = MODULE_TYPE_QUECTEL_RM500Q,
-        .name = "RM500Q-CN",
+        .name = "RM500Q",
         .manufacturer = "Quectel",
         .supports_5g = true,
         .supports_wifi = false,
@@ -182,11 +101,11 @@ static ModuleAtTable module_tables[] = {
             [CMD_GET_IMSI]       = CMD_SIMPLE("AT+CIMI"),
             [CMD_GET_SIGNAL]     = CMD_SIMPLE("AT+CSQ"),
             [CMD_GET_OPERATOR]   = CMD_SIMPLE("AT+COPS?"),
-            [CMD_GET_NETMODE]    = CMD_SIMPLE("AT+CNMP?"),
-            [CMD_SET_NETMODE_AUTO]    = CMD_SIMPLE("AT+CNMP=2"),
-            [CMD_SET_NETMODE_5G_SA]   = CMD_SIMPLE("AT+CNMP=71"),
-            [CMD_SET_NETMODE_5G_NSA]  = CMD_SIMPLE("AT+CNMP=70"),
-            [CMD_SET_NETMODE_LTE]     = CMD_SIMPLE("AT+CNMP=61"),
+            [CMD_GET_NETMODE]    = CMD_SIMPLE("AT+QNWPREFCFG=\"mode_pref\""),
+            [CMD_SET_NETMODE_AUTO]    = CMD_SIMPLE("AT+QNWPREFCFG=\"mode_pref\",AUTO"),
+            [CMD_SET_NETMODE_5G_SA]   = CMD_SIMPLE("AT+QNWPREFCFG=\"mode_pref\",NR5G-SA"),
+            [CMD_SET_NETMODE_5G_NSA]  = CMD_SIMPLE("AT+QNWPREFCFG=\"mode_pref\",NR5G-NSA"),
+            [CMD_SET_NETMODE_LTE]     = CMD_SIMPLE("AT+QNWPREFCFG=\"mode_pref\",LTE"),
             [CMD_SET_APN]        = CMD_PARAM("AT+CGDCONT=1,\"IP\",\"%s\"", NULL),
             [CMD_ACTIVATE_PDP]   = CMD_SIMPLE("AT+CGACT=1,1"),
             [CMD_DEACTIVATE_PDP] = CMD_SIMPLE("AT+CGACT=0,1"),
@@ -200,10 +119,10 @@ static ModuleAtTable module_tables[] = {
             [CMD_WLAN_SCAN]      = { .at_cmd = NULL },
             [CMD_GET_TEMP]       = CMD_SIMPLE("AT+QTEMP"),
             [CMD_GET_VERSION]    = CMD_SIMPLE("AT+CGMR"),
-            [CMD_GET_RSRP]       = CMD_SIMPLE("AT+QRSRP"),
-            [CMD_GET_SINR]       = CMD_SIMPLE("AT+QSINR"),
-            [CMD_SET_BAND]       = CMD_PARAM("AT+QCFG=\"band\",%s", NULL),
-            [CMD_GET_BAND]       = CMD_SIMPLE("AT+QCFG=\"band\""),
+            [CMD_GET_RSRP]       = CMD_SIMPLE("AT+QENG=\"servingcell\""),
+            [CMD_GET_SINR]       = CMD_SIMPLE("AT+QENG=\"servingcell\""),
+            [CMD_SET_BAND]       = CMD_PARAM("AT+QNWPREFCFG=\"nr5g_band\",%s", NULL),
+            [CMD_GET_BAND]       = CMD_SIMPLE("AT+QNWPREFCFG=\"nr5g_band\""),
         }
     },
     [MODULE_TYPE_FIBOCOM_FM150] = {
@@ -378,14 +297,24 @@ ModuleType module_type_from_string(const char *str)
         }
     }
     
-    if (strcasestr(str, "RG500U")) return MODULE_TYPE_QUECTEL_RG500U;
-    if (strcasestr(str, "RM500U")) return MODULE_TYPE_QUECTEL_RM500U;
-    if (strcasestr(str, "RG200U")) return MODULE_TYPE_QUECTEL_RG200U;
-    if (strcasestr(str, "RM500Q")) return MODULE_TYPE_QUECTEL_RM500Q;
-    if (strcasestr(str, "FM150")) return MODULE_TYPE_FIBOCOM_FM150;
-    if (strcasestr(str, "FM350")) return MODULE_TYPE_FIBOCOM_FM350;
-    if (strcasestr(str, "SIM8200")) return MODULE_TYPE_SIMCOM_SIM8200;
-    if (strcasestr(str, "MG8250")) return MODULE_TYPE_ZTE_MG8250;
+    if (strcasestr(str, "RG500U") || strcasestr(str, "RM500U") || strcasestr(str, "RG200U")) {
+        return MODULE_TYPE_QUECTEL_RG500U_SERIES;
+    }
+    if (strcasestr(str, "RM500Q")) {
+        return MODULE_TYPE_QUECTEL_RM500Q;
+    }
+    if (strcasestr(str, "FM150")) {
+        return MODULE_TYPE_FIBOCOM_FM150;
+    }
+    if (strcasestr(str, "FM350")) {
+        return MODULE_TYPE_FIBOCOM_FM350;
+    }
+    if (strcasestr(str, "SIM8200")) {
+        return MODULE_TYPE_SIMCOM_SIM8200;
+    }
+    if (strcasestr(str, "MG8250")) {
+        return MODULE_TYPE_ZTE_MG8250;
+    }
     
     return MODULE_TYPE_UNKNOWN;
 }
@@ -401,7 +330,7 @@ const char* module_get_name(ModuleType type)
 const char* module_get_at_command(ModuleType type, CommandType cmd)
 {
     if (type <= MODULE_TYPE_UNKNOWN || type >= MODULE_TYPE_MAX) {
-        type = MODULE_TYPE_QUECTEL_RG500U;
+        type = MODULE_TYPE_QUECTEL_RG500U_SERIES;
     }
     if (cmd >= 0 && cmd < CMD_MAX) {
         return module_tables[type].commands[cmd].at_cmd;
@@ -412,7 +341,7 @@ const char* module_get_at_command(ModuleType type, CommandType cmd)
 const AtCommandEntry* module_get_command_entry(ModuleType type, CommandType cmd)
 {
     if (type <= MODULE_TYPE_UNKNOWN || type >= MODULE_TYPE_MAX) {
-        type = MODULE_TYPE_QUECTEL_RG500U;
+        type = MODULE_TYPE_QUECTEL_RG500U_SERIES;
     }
     if (cmd >= 0 && cmd < CMD_MAX) {
         return &module_tables[type].commands[cmd];
