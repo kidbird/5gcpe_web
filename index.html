@@ -808,31 +808,6 @@
                     
                     <div class="vpn-content active" id="firewall-basic">
                         <div class="form-section">
-                            <h3 class="section-title">防火墙设置</h3>
-                            <div class="form-group">
-                                <label class="form-label">防火墙开关</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="firewall-toggle" checked>
-                                    <label for="firewall-toggle"></label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">SPI状态检测</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="spi-toggle" checked>
-                                    <label for="spi-toggle"></label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">DoS防护</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="dos-toggle" checked>
-                                    <label for="dos-toggle"></label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
                             <h3 class="section-title">DMZ主机</h3>
                             <div class="form-group">
                                 <label class="form-label">启用DMZ</label>
@@ -844,6 +819,17 @@
                             <div class="form-group">
                                 <label class="form-label">DMZ主机IP</label>
                                 <input type="text" class="form-input" id="dmz-ip" placeholder="如：192.168.1.100">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">ARP代理</h3>
+                            <div class="form-group">
+                                <label class="form-label">启用ARP代理</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="arp-proxy-toggle">
+                                    <label for="arp-proxy-toggle"></label>
+                                </div>
                             </div>
                         </div>
                     </div>
