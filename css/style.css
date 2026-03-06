@@ -466,6 +466,50 @@ body {
     gap: 16px;
 }
 
+.neighbor-cell-list {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.neighbor-cell-header {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 0.8fr 1fr 1fr;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-body);
+    border-bottom: 1px solid var(--border-light);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.neighbor-cell-body {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.neighbor-cell-row {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 0.8fr 1fr 1fr;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 12px;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.neighbor-cell-row:last-child {
+    border-bottom: none;
+}
+
+.neighbor-cell-row:hover {
+    background: var(--bg-hover);
+}
+
 .connected-devices {
     display: flex;
     flex-direction: column;
