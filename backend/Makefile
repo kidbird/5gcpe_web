@@ -1,78 +1,57 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -O2 -I./include
+CC ?= gcc
+CROSS_COMPILE ?=
+
+CC = $(CROSS_COMPILE)gcc
+AR = $(CROSS_COMPILE)ar
+STRIP = $(CROSS_COMPILE)strip
+
+CFLAGS = -Wall -O2 -I./include
 LDFLAGS = -lpthread
 
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+    CFLAGS += -g -DDEBUG
+    STRIP_CMD = @echo "Debug mode, skipping strip"
+else
+    STRIP_CMD = $(STRIP) $(CGI_TARGET)
+endif
+
 SRC_DIR = src
-OBJ_DIR = obj
-BIN_DIR = www/cgi-bin
+INCLUDE_DIR = include
+BUILD_DIR = build
 
-SOURCES = $(SRC_DIR)/cgi_handler.c $(SRC_DIR)/at_command.c $(SRC_DIR)/config_json.c \
-          $(SRC_DIR)/cpe_control.c $(SRC_DIR)/at_backend.c $(SRC_DIR)/api_backend.c \
-          $(SRC_DIR)/websocket.c $(SRC_DIR)/ws_server.c $(SRC_DIR)/module_at.c
+CGI_SOURCES = $(SRC_DIR)/cgi_handler.c \
+              $(SRC_DIR)/config.c \
+              $(SRC_DIR)/api_backend.c \
+              $(SRC_DIR)/at_command.c
 
-OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-TARGET = $(BIN_DIR)/cpe_cgi
-WS_TARGET = $(BIN_DIR)/ws_server
+CGI_TARGET = $(BUILD_DIR)/cpe_cgi
 
-.PHONY: all clean install ws
+all: $(BUILD_DIR) $(CGI_TARGET)
+	$(STRIP_CMD)
 
-all: $(TARGET) $(WS_TARGET)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(TARGET): $(SRC_DIR)/cgi_handler.c $(SRC_DIR)/at_command.c $(SRC_DIR)/config_json.c $(SRC_DIR)/cpe_control.c $(SRC_DIR)/at_backend.c $(SRC_DIR)/api_backend.c $(SRC_DIR)/module_at.c
-	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-$(WS_TARGET): $(SRC_DIR)/websocket.c $(SRC_DIR)/ws_server.c $(SRC_DIR)/cpe_control.c $(SRC_DIR)/at_backend.c $(SRC_DIR)/api_backend.c $(SRC_DIR)/module_at.c
-	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $(SRC_DIR)/websocket.c $(SRC_DIR)/ws_server.c $(SRC_DIR)/cpe_control.c $(SRC_DIR)/at_backend.c $(SRC_DIR)/api_backend.c $(SRC_DIR)/module_at.c -o $@ $(LDFLAGS)
-
-ws: $(WS_TARGET)
+$(CGI_TARGET): $(CGI_SOURCES)
+	$(CC) $(CFLAGS) -o $@ $(CGI_SOURCES) $(LDFLAGS)
 
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR)
 
-install: $(TARGET) $(WS_TARGET)
-	cp $(TARGET) /usr/lib/cgi-bin/
-	cp $(WS_TARGET) /usr/bin/
-	chmod 755 /usr/lib/cgi-bin/cpe_cgi
-	chmod 755 /usr/bin/ws_server
-	@mkdir -p /etc/cpe
-	@echo "# CPE Control Configuration" > /etc/cpe/cpe.conf
-	@echo "mode=at" >> /etc/cpe/cpe.conf
-	@echo "at_device=/dev/ttyUSB2" >> /etc/cpe/cpe.conf
-	@echo "api_host=127.0.0.1" >> /etc/cpe/cpe.conf
-	@echo "api_port=9000" >> /etc/cpe/cpe.conf
-	@echo "debug=0" >> /etc/cpe/cpe.conf
-	@echo "" >> /etc/cpe/cpe.conf
-	@echo "# WebSocket Configuration" >> /etc/cpe/cpe.conf
-	@echo "ws_port=8888" >> /etc/cpe/cpe.conf
+install: $(CGI_TARGET)
+	mkdir -p $(DESTDIR)/www/cgi-bin
+	mkdir -p $(DESTDIR)/www/html
+	mkdir -p $(DESTDIR)/etc/config
+	mkdir -p $(DESTDIR)/etc/lighttpd
+	cp $(CGI_TARGET) $(DESTDIR)/www/cgi-bin/
+	chmod +x $(DESTDIR)/www/cgi-bin/cpe_cgi
+	cp -r ../css $(DESTDIR)/www/html/
+	cp -r ../js $(DESTDIR)/www/html/
+	cp ../index.html $(DESTDIR)/www/html/
+	cp ../config/lighttpd.conf $(DESTDIR)/etc/lighttpd/ 2>/dev/null || true
 
-arm64:
-	@echo "ARM64 cross-compilation requires aarch64-linux-gnu-gcc toolchain"
-	@echo "Please install it or cross-compile on your build machine"
+.PHONY: all clean install
 
-help:
-	@echo "5G CPE Backend Build System"
-	@echo ""
-	@echo "Targets:"
-	@echo "  all       - Build CGI and WebSocket server (default)"
-	@echo "  ws        - Build only WebSocket server"
-	@echo "  arm64     - Build for ARM64 (Yocto Linux)"
-	@echo "  clean     - Remove build artifacts"
-	@echo "  install   - Install CGI and WebSocket server"
-	@echo ""
-	@echo "Usage:"
-	@echo "  make              # Build for local machine"
-	@echo "  make ws           # Build WebSocket server only"
-	@echo "  make arm64        # Cross-compile for ARM64"
-	@echo "  make clean        # Clean build files"
-	@echo "  make install      # Install to web server"
-	@echo ""
-	@echo "WebSocket Server Options:"
-	@echo "  -p <port>    WebSocket port (default: 8888)"
-	@echo "  -c <config>  CPE config file"
-	@echo "  -d           Daemon mode"
+print-%:
+	@echo $* = $($*)

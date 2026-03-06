@@ -1145,70 +1145,331 @@
 
                 <!-- 系统 -->
                 <section class="module-page" id="page-system">
-                    <div class="form-section">
-                        <h3 class="section-title">系统设置</h3>
-                        <div class="form-group">
-                            <label class="form-label">设备名称</label>
-                            <input type="text" class="form-input" value="5G CPE Pro">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">时区</label>
-                            <select class="form-select">
-                                <option>Asia/Shanghai (UTC+8)</option>
-                                <option>Asia/Tokyo (UTC+9)</option>
-                                <option>America/New_York (UTC-5)</option>
-                                <option>Europe/London (UTC+0)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">NTP服务器</label>
-                            <input type="text" class="form-input" value="pool.ntp.org">
-                        </div>
+                    <!-- 系统设置Tab导航 -->
+                    <div class="vpn-tabs" id="system-tabs">
+                        <button class="vpn-tab active" data-tab="basic">基本设置</button>
+                        <button class="vpn-tab" data-tab="password">密码管理</button>
+                        <button class="vpn-tab" data-tab="version">版本信息</button>
                     </div>
                     
-                    <div class="form-section">
-                        <h3 class="section-title">管理设置</h3>
-                        <div class="form-group">
-                            <label class="form-label">Web管理端口</label>
-                            <input type="text" class="form-input" value="80">
+                    <!-- 基本设置Tab内容 -->
+                    <div class="vpn-content active" id="system-tab-basic">
+                        <div class="form-section">
+                            <h3 class="section-title">系统设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">设备名称</label>
+                                <input type="text" class="form-input" id="system-device-name" value="5G CPE Pro">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">时区</label>
+                                <select class="form-select" id="system-timezone">
+                                    <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+                                    <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                                    <option value="America/New_York">America/New_York (UTC-5)</option>
+                                    <option value="Europe/London">Europe/London (UTC+0)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">NTP服务器</label>
+                                <input type="text" class="form-input" id="system-ntp-server" value="pool.ntp.org">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">管理员用户名</label>
-                            <input type="text" class="form-input" value="admin">
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">管理设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">Web管理端口</label>
+                                <input type="text" class="form-input" id="system-web-port" value="80">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">SSH管理端口</label>
+                                <input type="text" class="form-input" id="system-ssh-port" value="22">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">HTTPS</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="system-https-toggle">
+                                    <label for="system-https-toggle"></label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">管理员密码</label>
-                            <input type="password" class="form-input" value="admin123">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">HTTPS</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="https-toggle">
-                                <label for="https-toggle"></label>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">恢复与重启</h3>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" id="btn-factory-reset">恢复出厂设置</button>
+                                <button class="btn btn-primary" id="btn-reboot">重启设备</button>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="form-section">
-                        <h3 class="section-title">固件升级</h3>
-                        <div class="firmware-info">
-                            <div class="firmware-item">
-                                <span class="firmware-label">当前版本</span>
-                                <span class="firmware-value">V2.1.5</span>
+                    <!-- 密码管理Tab内容 -->
+                    <div class="vpn-content" id="system-tab-password">
+                        <div class="form-section">
+                            <h3 class="section-title">修改管理员密码</h3>
+                            <div class="form-group">
+                                <label class="form-label">当前密码</label>
+                                <input type="password" class="form-input" id="system-old-password" placeholder="请输入当前密码">
                             </div>
-                            <div class="firmware-item">
-                                <span class="firmware-label">最新版本</span>
-                                <span class="firmware-value">V2.1.5</span>
+                            <div class="form-group">
+                                <label class="form-label">新密码</label>
+                                <input type="password" class="form-input" id="system-new-password" placeholder="请输入新密码">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">确认新密码</label>
+                                <input type="password" class="form-input" id="system-new-password-confirm" placeholder="请再次输入新密码">
+                            </div>
+                            <div class="upgrade-actions">
+                                <button class="btn btn-primary" id="btn-change-password">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                        <polyline points="7 3 7 8 15 8"></polyline>
+                                    </svg>
+                                    修改密码
+                                </button>
                             </div>
                         </div>
-                        <button class="btn btn-secondary">检查更新</button>
                     </div>
                     
-                    <div class="form-section">
-                        <h3 class="section-title">恢复与重启</h3>
-                        <div class="action-buttons">
-                            <button class="btn btn-secondary">恢复出厂设置</button>
-                            <button class="btn btn-primary">重启设备</button>
+                    <!-- 版本信息Tab内容 -->
+                    <div class="vpn-content" id="system-tab-version">
+                        <div class="form-section">
+                            <h3 class="section-title">设备版本信息</h3>
+                            <div class="version-info-card">
+                                <div class="version-item">
+                                    <span class="version-label">设备型号</span>
+                                    <span class="version-value" id="version-model">5G CPE Pro</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">硬件版本</span>
+                                    <span class="version-value" id="version-hardware">V1.0</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">固件版本</span>
+                                    <span class="version-value" id="version-firmware">V2.1.5</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">5G模组型号</span>
+                                    <span class="version-value" id="version-module">Quectel RM500Q</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">模组基线版本</span>
+                                    <span class="version-value" id="version-module-fw">RM500QGLABR11A06</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">MAC地址</span>
+                                    <span class="version-value" id="version-mac">00:11:22:33:44:55</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">序列号</span>
+                                    <span class="version-value" id="version-serial">CPE20240100001</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">IMEI</span>
+                                    <span class="version-value" id="version-imei">861234567890123</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">软件组件版本</h3>
+                            <div class="version-info-card">
+                                <div class="version-item">
+                                    <span class="version-label">Linux内核</span>
+                                    <span class="version-value" id="version-kernel">5.4.120</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">Web服务器</span>
+                                    <span class="version-value" id="version-webserver">lighttpd/1.4.59</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">CGI版本</span>
+                                    <span class="version-value" id="version-cgi">1.0.0</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">构建时间</span>
+                                    <span class="version-value" id="version-build-time">2024-01-15 10:30:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">在线升级</h3>
+                            <!-- 升级通知提示 -->
+                            <div class="upgrade-notice" id="upgrade-notice" style="display: none;">
+                                <div class="upgrade-notice-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </div>
+                                <div class="upgrade-notice-content">
+                                    <h4>发现新版本</h4>
+                                    <p id="upgrade-notice-text">有新的固件版本可供升级</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">当前版本</h3>
+                            <div class="version-info-card">
+                                <div class="version-item">
+                                    <span class="version-label">当前固件版本</span>
+                                    <span class="version-value" id="upgrade-current-version">V2.1.5</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">最新固件版本</span>
+                                    <span class="version-value" id="upgrade-latest-version">V2.1.5</span>
+                                    <span class="version-badge" id="upgrade-new-badge" style="display: none;">新版本</span>
+                                </div>
+                            </div>
+                            <div class="upgrade-actions">
+                                <button class="btn btn-primary" id="btn-check-upgrade">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    检查更新
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 升级包信息 -->
+                        <div class="form-section" id="upgrade-package-section" style="display: none;">
+                            <h3 class="section-title">升级包信息</h3>
+                            <div class="version-info-card">
+                                <div class="version-item">
+                                    <span class="version-label">升级版本</span>
+                                    <span class="version-value" id="package-version">-</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">文件大小</span>
+                                    <span class="version-value" id="package-size">-</span>
+                                </div>
+                                <div class="version-item">
+                                    <span class="version-label">发布日期</span>
+                                    <span class="version-value" id="package-date">-</span>
+                                </div>
+                                <div class="version-item full-width">
+                                    <span class="version-label">更新说明</span>
+                                    <div class="version-changelog" id="package-changelog">-</div>
+                                </div>
+                            </div>
+                            <div class="upgrade-actions">
+                                <button class="btn btn-primary" id="btn-start-upgrade">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    立即升级
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 升级进度 -->
+                        <div class="form-section" id="upgrade-progress-section" style="display: none;">
+                            <h3 class="section-title">升级进度</h3>
+                            <div class="upgrade-progress-card">
+                                <div class="progress-step" id="step-download">
+                                    <div class="step-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="step-content">
+                                        <span class="step-title">下载升级包</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-download" style="width: 0%"></div>
+                                        </div>
+                                        <span class="step-percent" id="percent-download">0%</span>
+                                    </div>
+                                </div>
+                                <div class="progress-step" id="step-verify">
+                                    <div class="step-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="step-content">
+                                        <span class="step-title">校验文件</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-verify" style="width: 0%"></div>
+                                        </div>
+                                        <span class="step-percent" id="percent-verify">0%</span>
+                                    </div>
+                                </div>
+                                <div class="progress-step" id="step-flash">
+                                    <div class="step-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="step-content">
+                                        <span class="step-title">写入固件</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-flash" style="width: 0%"></div>
+                                        </div>
+                                        <span class="step-percent" id="percent-flash">0%</span>
+                                    </div>
+                                </div>
+                                <div class="progress-step" id="step-reboot">
+                                    <div class="step-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="step-content">
+                                        <span class="step-title">重启设备</span>
+                                        <span class="step-status" id="status-reboot">等待中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upgrade-warning">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                <span>升级过程中请勿断电或刷新页面，设备将自动重启</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 本地升级 -->
+                        <div class="form-section">
+                            <h3 class="section-title">本地升级</h3>
+                            <div class="local-upgrade-area">
+                                <div class="file-upload-area" id="file-upload-area">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <p>点击或拖拽固件文件到此处</p>
+                                    <span class="file-hint">支持 .bin, .img 格式文件</span>
+                                    <input type="file" id="firmware-file-input" accept=".bin,.img" hidden>
+                                </div>
+                                <div class="selected-file" id="selected-file" style="display: none;">
+                                    <span class="file-name" id="selected-file-name"></span>
+                                    <button class="btn btn-sm btn-secondary" id="btn-clear-file">清除</button>
+                                </div>
+                                <button class="btn btn-primary" id="btn-local-upgrade" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    上传并升级
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>

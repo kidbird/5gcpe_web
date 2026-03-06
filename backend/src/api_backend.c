@@ -1,569 +1,316 @@
-#include "cpe_control.h"
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <ctype.h>
+#include "cpe.h"
+#include <sys/stat.h>
+#include <sys/sysinfo.h>
 
-typedef struct {
-    int sock_fd;
-    char host[128];
-    int port;
-    pthread_mutex_t mutex;
-} ApiBackendContext;
+static time_t system_start_time = 0;
+static uint64_t total_tx_bytes = 0;
+static uint64_t total_rx_bytes = 0;
 
-static CpeCtrlResult api_socket_connect(ApiBackendContext *ctx)
+void cpe_control_init(void)
 {
-    if (ctx->sock_fd >= 0) {
-        return CTRL_OK;
-    }
-
-    ctx->sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (ctx->sock_fd < 0) {
-        return CTRL_ERROR;
-    }
-
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(ctx->port);
-
-    if (inet_pton(AF_INET, ctx->host, &server_addr.sin_addr) <= 0) {
-        struct hostent *he = gethostbyname(ctx->host);
-        if (!he) {
-            close(ctx->sock_fd);
-            ctx->sock_fd = -1;
-            return CTRL_ERROR;
-        }
-        memcpy(&server_addr.sin_addr, he->h_addr_list[0], he->h_length);
-    }
-
-    if (connect(ctx->sock_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        close(ctx->sock_fd);
-        ctx->sock_fd = -1;
-        return CTRL_NO_DEVICE;
-    }
-
-    return CTRL_OK;
+    system_start_time = time(NULL);
+    config_load(NULL);
 }
 
-static void api_socket_close(ApiBackendContext *ctx)
+int cgi_get_device_status(DeviceStatus *status)
 {
-    if (ctx->sock_fd >= 0) {
-        close(ctx->sock_fd);
-        ctx->sock_fd = -1;
+    if (!status) return -1;
+    
+    memset(status, 0, sizeof(DeviceStatus));
+    
+    strcpy(status->device_model, "CPE-5G01");
+    strcpy(status->firmware_version, "V2.1.5");
+    
+    at_get_imei(status->imei, sizeof(status->imei));
+    at_get_iccid(status->iccid, sizeof(status->iccid));
+    at_get_imsi(status->imsi, sizeof(status->imsi));
+    
+    FILE *fp = fopen("/sys/class/net/eth0/address", "r");
+    if (fp) {
+        fgets(status->lan_mac, sizeof(status->lan_mac), fp);
+        status->lan_mac[strcspn(status->lan_mac, "\n")] = 0;
+        fclose(fp);
     }
-}
-
-static CpeCtrlResult api_socket_send_recv(ApiBackendContext *ctx, const char *request, char *response, int resp_len)
-{
-    pthread_mutex_lock(&ctx->mutex);
-
-    CpeCtrlResult ret = api_socket_connect(ctx);
-    if (ret != CTRL_OK) {
-        pthread_mutex_unlock(&ctx->mutex);
-        return ret;
+    
+    fp = fopen("/sys/class/net/wwan0/address", "r");
+    if (fp) {
+        fgets(status->wan_ip, sizeof(status->wan_ip), fp);
+        status->wan_ip[strcspn(status->wan_ip, "\n")] = 0;
+        fclose(fp);
     }
-
-    send(ctx->sock_fd, request, strlen(request), 0);
-
-    memset(response, 0, resp_len);
-    int n = recv(ctx->sock_fd, response, resp_len - 1, 0);
-    if (n <= 0) {
-        pthread_mutex_unlock(&ctx->mutex);
-        return CTRL_ERROR;
+    
+    if (system_start_time > 0) {
+        time_t now = time(NULL);
+        int uptime_sec = (int)(now - system_start_time);
+        status->uptime_seconds = uptime_sec;
+        
+        int days = uptime_sec / 86400;
+        int hours = (uptime_sec % 86400) / 3600;
+        int mins = (uptime_sec % 3600) / 60;
+        
+        snprintf(status->uptime, sizeof(status->uptime), 
+                 "%d天 %d时 %d分", days, hours, mins);
     }
-
-    pthread_mutex_unlock(&ctx->mutex);
-
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_init(const char *config)
-{
-    return CTRL_OK;
-}
-
-static void api_close(void)
-{
-}
-
-static CpeCtrlResult api_get_signal_strength(int *rssi)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+CSQ\r\n");
-
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    int value = -1;
-    char *p = strstr(response, "+CSQ:");
-    if (p) {
-        sscanf(p, "+CSQ: %d,", &value);
-        if (value == 99) {
-            return CTRL_ERROR;
-        }
-        *rssi = -113 + (value * 2);
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_operator(char *operator_name, int len)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+COPS?\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = strstr(response, "+COPS:");
-    if (p) {
-        char *start = strchr(p, '"');
-        char *end = strrchr(p, '"');
-        if (start && end && start != end) {
-            int slen = end - start - 1;
-            if (slen < len) {
-                strncpy(operator_name, start + 1, slen);
-                operator_name[slen] = '\0';
-                return CTRL_OK;
-            }
-        }
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_imei(char *imei, int len)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+GSN\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = response;
-    while (*p && !isdigit(*p)) p++;
-
-    if (*p) {
-        int i = 0;
-        while (*p && isdigit(*p) && i < len - 1) {
-            imei[i++] = *p++;
-        }
-        imei[i] = '\0';
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_iccid(char *iccid, int len)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+QCCID\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = strstr(response, "+QCCID:");
-    if (p) {
-        sscanf(p, "+QCCID: %s", iccid);
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_imsi(char *imsi, int len)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+CIMI\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = response;
-    while (*p && !isdigit(*p)) p++;
-
-    if (*p) {
-        int i = 0;
-        while (*p && isdigit(*p) && i < len - 1) {
-            imsi[i++] = *p++;
-        }
-        imsi[i] = '\0';
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_network_mode(int *mode)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+CNMP?\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = strstr(response, "+CNMP:");
-    if (p) {
-        sscanf(p, "+CNMP: %d", mode);
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_set_network_mode(int mode)
-{
-    ApiBackendContext *ctx = NULL;
-
-    char cmd[64];
-    switch (mode) {
-        case NETWORK_5G_SA:
-            snprintf(cmd, sizeof(cmd), "AT+CNMP=71\r\n");
-            break;
-        case NETWORK_5G_SA_NSA:
-            snprintf(cmd, sizeof(cmd), "AT+CNMP=70\r\n");
-            break;
-        case NETWORK_LTE:
-            snprintf(cmd, sizeof(cmd), "AT+CNMP=61\r\n");
-            break;
-        default:
-            snprintf(cmd, sizeof(cmd), "AT+CNMP=2\r\n");
-    }
-
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    return strstr(response, "OK") ? CTRL_OK : CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_network_registration(int *reg_status)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+CREG?\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = strstr(response, "+CREG:");
-    if (p) {
-        sscanf(p, "+CREG: %*d,%d", reg_status);
-        return CTRL_OK;
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_set_apn(const char *apn, const char *username, const char *password, int auth_type)
-{
-    ApiBackendContext *ctx = NULL;
-
-    char cmd[256];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(cmd, sizeof(cmd), "AT+CGDCONT=1,\"IP\",\"%s\"\r\n", apn);
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    if (auth_type > 0) {
-        snprintf(cmd, sizeof(cmd), "AT+CGAUTH=1,1,%d,\"%s\",\"%s\"\r\n", auth_type, password, username);
-        api_socket_send_recv(ctx, cmd, response, sizeof(response));
-    }
-
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_activate_pdp(int cid)
-{
-    ApiBackendContext *ctx = NULL;
-    char cmd[64];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(cmd, sizeof(cmd), "AT+CGACT=1,%d\r\n", cid);
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    return strstr(response, "OK") ? CTRL_OK : CTRL_ERROR;
-}
-
-static CpeCtrlResult api_deactivate_pdp(int cid)
-{
-    ApiBackendContext *ctx = NULL;
-    char cmd[64];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(cmd, sizeof(cmd), "AT+CGACT=0,%d\r\n", cid);
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_get_apn_info(char *apn, int len)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    char request[256];
-    snprintf(request, sizeof(request), "AT+CGDCONT?\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-
-    char *p = strstr(response, "+CGDCONT:");
-    if (p) {
-        char *start = strchr(p, '"');
-        char *end = strchr(start + 1, '"');
-        if (start && end) {
-            int slen = end - start - 1;
-            if (slen < len) {
-                strncpy(apn, start + 1, slen);
-                apn[slen] = '\0';
-                return CTRL_OK;
-            }
-        }
-    }
-
-    return CTRL_ERROR;
-}
-
-static CpeCtrlResult api_get_device_status(DeviceStatus *status)
-{
-    ApiBackendContext *ctx = NULL;
-
-    strcpy(status->device_model, "RG500U-CN");
-    strcpy(status->firmware_version, "RG500UCNAAR02A04M2G");
-
-    char request[256];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(request, sizeof(request), "AT+GSN\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-    char *p = response;
-    while (*p && !isdigit(*p)) p++;
-    if (*p) {
-        int i = 0;
-        while (*p && isdigit(*p) && i < 19) {
-            status->imei[i++] = *p++;
-        }
-        status->imei[i] = '\0';
-    }
-
-    snprintf(request, sizeof(request), "AT+QCCID\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-    p = strstr(response, "+QCCID:");
-    if (p) {
-        sscanf(p, "+QCCID: %s", status->iccid);
-    }
-
-    snprintf(request, sizeof(request), "AT+COPS?\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-    p = strstr(response, "+COPS:");
-    if (p) {
-        char *start = strchr(p, '"');
-        char *end = strrchr(p, '"');
-        if (start && end && start != end) {
-            int slen = end - start - 1;
-            if (slen < 32) {
-                strncpy(status->operator_name, start + 1, slen);
-                status->operator_name[slen] = '\0';
-            }
-        }
-    }
-
-    snprintf(request, sizeof(request), "AT+CSQ\r\n");
-    api_socket_send_recv(ctx, request, response, sizeof(response));
-    p = strstr(response, "+CSQ:");
-    if (p) {
-        int csq;
-        sscanf(p, "+CSQ: %d,", &csq);
-        if (csq != 99) {
-            status->signal_strength = -113 + (csq * 2);
-        }
-    }
-
+    
+    status->signal_strength = at_get_signal_strength();
+    
+    at_get_operator(status->operator_name, sizeof(status->operator_name));
+    
     strcpy(status->network_type, "5G NR");
-    strcpy(status->lan_mac, "00:1A:2B:3C:4D:5E");
-    strcpy(status->wan_ip, "10.0.0.1");
-    strcpy(status->uptime, "0天 0时 0分");
-
-    status->rsrp = -85;
+    strcpy(status->network_mode_str, "SA");
+    
+    status->rsrp = -72;
+    status->rsrq = -10;
     status->sinr = 15;
-
-    return CTRL_OK;
+    strcpy(status->band, "n78");
+    status->earfcn = 627264;
+    status->pci = 120;
+    strcpy(status->cell_id, "0x12345678");
+    status->temperature = 45;
+    strcpy(status->sim_status, "ready");
+    
+    return 0;
 }
 
-static CpeCtrlResult api_get_traffic_stats(TrafficStats *stats)
+int cgi_get_traffic_stats(TrafficStats *stats)
 {
-    strcpy(stats->tx_bytes, "0 MB");
-    strcpy(stats->rx_bytes, "0 MB");
-    stats->tx_rate = 0;
-    stats->rx_rate = 0;
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_wlan_init(void)
-{
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT+QWIFI=1\r\n", response, sizeof(response));
-    return strstr(response, "OK") ? CTRL_OK : CTRL_ERROR;
-}
-
-static CpeCtrlResult api_wlan_deinit(void)
-{
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT+QWIFI=0\r\n", response, sizeof(response));
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_wlan_set_ap(const char *ssid, const char *password, int channel, int encryption)
-{
-    ApiBackendContext *ctx = NULL;
-    char cmd[256];
-    char response[MAX_BUFFER_SIZE];
-
-    if (encryption == 0) {
-        snprintf(cmd, sizeof(cmd), "AT+QAPCONFIG=1,\"%s\",%d,0\r\n", ssid, channel);
-    } else {
-        snprintf(cmd, sizeof(cmd), "AT+QAPCONFIG=1,\"%s\",%d,4,\"%s\"\r\n", ssid, channel, password);
+    if (!stats) return -1;
+    
+    memset(stats, 0, sizeof(TrafficStats));
+    
+    FILE *fp = fopen("/proc/net/dev", "r");
+    if (fp) {
+        char line[256];
+        while (fgets(line, sizeof(line), fp)) {
+            if (strstr(line, "wwan0:")) {
+                unsigned long rx_bytes, tx_bytes;
+                sscanf(line, "wwan0: %lu %*d %*d %*d %*d %*d %*d %*d %lu",
+                       &rx_bytes, &tx_bytes);
+                stats->total_rx = rx_bytes;
+                stats->total_tx = tx_bytes;
+                
+                double rx_mb = rx_bytes / (1024.0 * 1024.0);
+                double tx_mb = tx_bytes / (1024.0 * 1024.0);
+                
+                snprintf(stats->rx_bytes, sizeof(stats->rx_bytes), "%.1f MB", rx_mb);
+                snprintf(stats->tx_bytes, sizeof(stats->tx_bytes), "%.1f MB", tx_mb);
+                break;
+            }
+        }
+        fclose(fp);
     }
-
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-    return CTRL_OK;
+    
+    stats->tx_rate = 45000;
+    stats->rx_rate = 78000;
+    stats->connected_devices = 4;
+    stats->session_start = system_start_time;
+    
+    return 0;
 }
 
-static CpeCtrlResult api_wlan_set_sta(const char *ssid, const char *password)
+int cgi_get_lan_config(LanConfig *config)
 {
-    ApiBackendContext *ctx = NULL;
-    char cmd[256];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(cmd, sizeof(cmd), "AT+QWSTACONF=1,\"%s\",\"%s\"\r\n", ssid, password);
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    return CTRL_OK;
+    return config_get_lan(config);
 }
 
-static CpeCtrlResult api_wlan_sta_connect(void)
+int cgi_set_lan_config(LanConfig *config)
 {
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT+QWSTACONN=1\r\n", response, sizeof(response));
-    return CTRL_OK;
+    return config_set_lan(config);
 }
 
-static CpeCtrlResult api_wlan_sta_disconnect(void)
+int cgi_get_apn_list(ApnConfig *apns, int *count)
 {
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT+QWSTACONN=0\r\n", response, sizeof(response));
-    return CTRL_OK;
+    return config_get_apn_list(apns, count);
 }
 
-static CpeCtrlResult api_wlan_scan(WifiScanResult *results, int *count)
+int cgi_add_apn(ApnConfig *apn)
 {
-    return CTRL_ERROR;
+    return config_set_apn(apn);
 }
 
-static CpeCtrlResult api_reboot(void)
+int cgi_edit_apn(ApnConfig *apn)
 {
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT+CFUN=1,1\r\n", response, sizeof(response));
-    return CTRL_OK;
+    return config_set_apn(apn);
 }
 
-static CpeCtrlResult api_factory_reset(void)
+int cgi_delete_apn(int apn_id)
 {
-    ApiBackendContext *ctx = NULL;
-    char response[MAX_BUFFER_SIZE];
-    api_socket_send_recv(ctx, "AT&F\r\n", response, sizeof(response));
-    return CTRL_OK;
+    return config_delete_apn(apn_id);
 }
 
-static CpeCtrlResult api_set_airplane_mode(int enable)
+int cgi_activate_apn(int apn_id)
 {
-    ApiBackendContext *ctx = NULL;
-    char cmd[64];
-    char response[MAX_BUFFER_SIZE];
-
-    snprintf(cmd, sizeof(cmd), "AT+CFUN=%d\r\n", enable ? 0 : 1);
-    api_socket_send_recv(ctx, cmd, response, sizeof(response));
-
-    return CTRL_OK;
-}
-
-static CpeCtrlResult api_get_temperature(int *temp)
-{
-    char response[MAX_BUFFER_SIZE];
-    ApiBackendContext *ctx = NULL;
-
-    api_socket_send_recv(ctx, "AT+QTEMP\r\n", response, sizeof(response));
-
-    char *p = strstr(response, "+QTEMP:");
-    if (p) {
-        sscanf(p, "+QTEMP: %d", temp);
-        return CTRL_OK;
+    ApnConfig apns[MAX_APN_COUNT];
+    int count = 0;
+    
+    config_get_apn_list(apns, &count);
+    
+    for (int i = 0; i < count; i++) {
+        apns[i].is_active = (apns[i].id == apn_id);
+        if (apns[i].id == apn_id) {
+            at_set_apn(apns[i].name, apns[i].username, apns[i].password, apns[i].auth_type);
+            at_activate_pdp_context();
+        }
+        config_set_apn(&apns[i]);
     }
-
-    return CTRL_ERROR;
+    
+    return 0;
 }
 
-CpeControlOps* api_backend_create(void)
+int cgi_get_wlan_ap_config(WlanApConfig *config)
 {
-    CpeControlOps *ops = (CpeControlOps *)malloc(sizeof(CpeControlOps));
-    if (!ops) return NULL;
+    return config_get_wlan_ap(config);
+}
 
-    ApiBackendContext *ctx = (ApiBackendContext *)malloc(sizeof(ApiBackendContext));
-    if (!ctx) {
-        free(ops);
-        return NULL;
+int cgi_set_wlan_ap_config(WlanApConfig *config)
+{
+    int ret = config_set_wlan_ap(config);
+    if (ret == 0) {
+        system("wifi reload");
     }
+    return ret;
+}
 
-    ctx->sock_fd = -1;
-    strcpy(ctx->host, "127.0.0.1");
-    ctx->port = 9000;
-    pthread_mutex_init(&ctx->mutex, NULL);
+int cgi_get_wlan_sta_config(WlanStaConfig *config)
+{
+    return config_get_wlan_sta(config);
+}
 
-    ops->context = ctx;
-    ops->init = api_init;
-    ops->close = api_close;
-    ops->get_signal_strength = api_get_signal_strength;
-    ops->get_operator = api_get_operator;
-    ops->get_imei = api_get_imei;
-    ops->get_iccid = api_get_iccid;
-    ops->get_imsi = api_get_imsi;
-    ops->get_network_mode = api_get_network_mode;
-    ops->set_network_mode = api_set_network_mode;
-    ops->get_network_registration = api_get_network_registration;
-    ops->set_apn = api_set_apn;
-    ops->activate_pdp = api_activate_pdp;
-    ops->deactivate_pdp = api_deactivate_pdp;
-    ops->get_apn_info = api_get_apn_info;
-    ops->get_device_status = api_get_device_status;
-    ops->get_traffic_stats = api_get_traffic_stats;
-    ops->wlan_init = api_wlan_init;
-    ops->wlan_deinit = api_wlan_deinit;
-    ops->wlan_set_ap = api_wlan_set_ap;
-    ops->wlan_set_sta = api_wlan_set_sta;
-    ops->wlan_sta_connect = api_wlan_sta_connect;
-    ops->wlan_sta_disconnect = api_wlan_sta_disconnect;
-    ops->wlan_scan = api_wlan_scan;
-    ops->reboot = api_reboot;
-    ops->factory_reset = api_factory_reset;
-    ops->set_airplane_mode = api_set_airplane_mode;
-    ops->get_temperature = api_get_temperature;
+int cgi_set_wlan_sta_config(WlanStaConfig *config)
+{
+    return config_set_wlan_sta(config);
+}
 
-    return ops;
+int cgi_scan_wifi(void)
+{
+    return 0;
+}
+
+int cgi_get_firewall_config(FirewallConfig *config)
+{
+    return config_get_firewall(config);
+}
+
+int cgi_set_firewall_config(FirewallConfig *config)
+{
+    int ret = config_set_firewall(config);
+    if (ret == 0) {
+        system("firewall restart");
+    }
+    return ret;
+}
+
+int cgi_reboot(void)
+{
+    system("sync");
+    system("reboot");
+    return 0;
+}
+
+int cgi_factory_reset(void)
+{
+    system("rm -f /etc/cpe/config.json");
+    system("sync");
+    system("reboot");
+    return 0;
+}
+
+int cgi_get_cellular_config(CellularConfig *config)
+{
+    return config_get_cellular(config);
+}
+
+int cgi_set_cellular_config(CellularConfig *config)
+{
+    int ret = config_set_cellular(config);
+    if (ret == 0) {
+        at_set_network_mode(config->network_mode);
+    }
+    return ret;
+}
+
+int cgi_get_vpn_config(int type, VpnConfig *config)
+{
+    return config_get_vpn(type, config);
+}
+
+int cgi_set_vpn_config(VpnConfig *config)
+{
+    return config_set_vpn(config);
+}
+
+int cgi_vpn_connect(int type)
+{
+    char cmd[128];
+    snprintf(cmd, sizeof(cmd), "vpn start %d", type);
+    system(cmd);
+    return 0;
+}
+
+int cgi_vpn_disconnect(int type)
+{
+    char cmd[128];
+    snprintf(cmd, sizeof(cmd), "vpn stop %d", type);
+    system(cmd);
+    return 0;
+}
+
+int cgi_get_iot_config(IotConfig *config)
+{
+    return config_get_iot(config);
+}
+
+int cgi_set_iot_config(IotConfig *config)
+{
+    return config_set_iot(config);
+}
+
+int cgi_get_system_config(SystemConfig *config)
+{
+    return config_get_system(config);
+}
+
+int cgi_set_system_config(SystemConfig *config)
+{
+    return config_set_system(config);
+}
+
+int cgi_get_connected_devices(ConnectedDevice *devices, int *count)
+{
+    if (!devices || !count) return -1;
+    
+    *count = 0;
+    
+    FILE *fp = fopen("/proc/net/arp", "r");
+    if (!fp) return -1;
+    
+    char line[256];
+    fgets(line, sizeof(line), fp);
+    
+    while (fgets(line, sizeof(line), fp) && *count < 64) {
+        char ip[16], hw_type[8], flags[8], hw_addr[18], mask[8], device[16];
+        
+        if (sscanf(line, "%15s %7s %7s %17s %7s %15s",
+                   ip, hw_type, flags, hw_addr, mask, device) == 6) {
+            if (strcmp(hw_addr, "00:00:00:00:00:00") != 0 && 
+                strncmp(hw_addr, "ff:ff:ff:ff:ff:ff", 17) != 0) {
+                strncpy(devices[*count].ip, ip, sizeof(devices[*count].ip) - 1);
+                strncpy(devices[*count].mac, hw_addr, sizeof(devices[*count].mac) - 1);
+                strcpy(devices[*count].hostname, "Unknown");
+                strncpy(devices[*count].interface, device, sizeof(devices[*count].interface) - 1);
+                devices[*count].connected_time = time(NULL);
+                (*count)++;
+            }
+        }
+    }
+    
+    fclose(fp);
+    return 0;
+}
+
+int cgi_send_at_command(const char *command, char *response, int timeout_ms)
+{
+    if (!command || !response) return -1;
+    
+    return at_command_send(command, response, timeout_ms);
 }
