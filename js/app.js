@@ -178,6 +178,10 @@ const CPE_API = {
         });
     },
     
+    setLinkType: function(linkType) {
+        return this.post('link_type_set', { link_type: linkType });
+    },
+    
     getVersionInfo: function() {
         return this.get('version_get');
     },
@@ -325,6 +329,14 @@ document.addEventListener('DOMContentLoaded', function() {
             updateElement('tx-bytes', data.tx_bytes || '-');
             updateElement('rx-bytes', data.rx_bytes || '-');
             updateElement('connected-devices', data.connected_devices || '0');
+            updateElement('active-sim', (data.active_sim === 2 ? 'SIM卡2' : 'SIM卡1') + ' - 已插入');
+            
+            updateLinkStatus(data.link_type || 'cellular');
+            
+            const linkTypeSelect = document.getElementById('link-type-select');
+            if (linkTypeSelect && data.link_type) {
+                linkTypeSelect.value = data.link_type;
+            }
             
             const signalBars = document.querySelector('.signal-bars');
             if (signalBars && data.signal_strength) {
@@ -348,12 +360,33 @@ document.addEventListener('DOMContentLoaded', function() {
             updateElement('tx-bytes', '1.2 GB');
             updateElement('rx-bytes', '3.5 GB');
             updateElement('connected-devices', '5');
+            updateElement('active-sim', 'SIM卡1 - 已插入');
+            
+            updateLinkStatus('cellular');
+            
+            const linkTypeSelect = document.getElementById('link-type-select');
+            if (linkTypeSelect) {
+                linkTypeSelect.value = 'cellular';
+            }
             
             const signalBars = document.querySelector('.signal-bars');
             if (signalBars) {
                 signalBars.className = 'signal-bars strength-3';
             }
         });
+    }
+    
+    function updateLinkStatus(activeType) {
+        const statusTexts = {
+            'cellular': '蜂窝网络',
+            'wired': '有线网络',
+            'bridge': '无线桥接'
+        };
+        
+        const deviceLinkTypeEl = document.getElementById('device-link-type');
+        if (deviceLinkTypeEl && statusTexts[activeType]) {
+            deviceLinkTypeEl.textContent = statusTexts[activeType];
+        }
     }
 
     function loadLanConfig() {
@@ -1504,6 +1537,59 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('at-clear-btn').addEventListener('click', function() {
         document.getElementById('at-command').value = '';
         document.getElementById('at-result').innerHTML = '<pre>等待发送AT指令...</pre>';
+    });
+
+    const simSwitchBtn = document.getElementById('sim-switch-btn');
+    let currentSimValue = 1;
+    
+    if (simSwitchBtn) {
+        simSwitchBtn.addEventListener('click', function() {
+            const newSim = currentSimValue === 1 ? 2 : 1;
+            currentSimValue = newSim;
+            
+            CPE_API.setCellularConfig({
+                active_sim: newSim
+            }).then(() => {
+                showNotification('SIM卡切换成功', 'success');
+                loadDeviceStatus();
+            }).catch(error => {
+                showNotification('SIM卡切换失败: ' + error.message, 'error');
+                currentSimValue = newSim === 1 ? 2 : 1;
+            });
+        });
+    }
+
+    document.querySelectorAll('.link-type-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const linkType = this.getAttribute('data-type');
+            
+            CPE_API.setLinkType(linkType).then(() => {
+                updateLinkStatus(linkType);
+                showNotification('链路切换成功', 'success');
+            }).catch(error => {
+                showNotification('链路切换失败: ' + error.message, 'error');
+            });
+        });
+    });
+
+    document.querySelectorAll('.link-toggle-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const linkType = this.getAttribute('data-type');
+            
+            document.querySelectorAll('.link-toggle-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            CPE_API.setLinkType(linkType).then(() => {
+                updateLinkStatus(linkType);
+                showNotification('链路切换成功', 'success');
+            }).catch(error => {
+                showNotification('链路切换失败: ' + error.message, 'error');
+            });
+        });
     });
 
     loadDeviceStatus();

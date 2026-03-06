@@ -28,6 +28,7 @@
     --success-light: #d1fae5;
     --warning-color: #f59e0b;
     --warning-light: #fef3c7;
+    --warning-dark: #d97706;
     --danger-color: #ef4444;
     --danger-light: #fee2e2;
     --info-color: #3b82f6;
@@ -280,12 +281,93 @@ body {
     border: 1px solid var(--border-light);
     transition: var(--transition);
     box-shadow: var(--shadow-sm);
+    position: relative;
 }
 
 .status-card:hover {
     box-shadow: var(--shadow-md);
     border-color: var(--primary-light);
     transform: translateY(-2px);
+}
+
+.status-link-toggle {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--primary-color);
+    border: 1px solid var(--primary-dark);
+    border-radius: 14px;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.status-link-toggle:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.4);
+}
+
+.status-link-toggle svg {
+    transition: var(--transition);
+}
+
+.status-link-toggle:hover svg {
+    transform: rotate(180deg);
+}
+
+.link-toggle-dropdown {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 110px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: var(--transition);
+    z-index: 100;
+}
+
+.status-link-toggle:hover .link-toggle-dropdown,
+.link-toggle-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.link-toggle-option {
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.link-toggle-option:last-child {
+    border-bottom: none;
+}
+
+.link-toggle-option:hover {
+    background: var(--bg-hover);
+    color: var(--primary-color);
+}
+
+.link-toggle-option.active {
+    color: var(--primary-color);
+    background: var(--info-light);
+    font-weight: 600;
 }
 
 .status-icon {
@@ -690,6 +772,40 @@ body {
     background: var(--bg-body);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
+}
+
+.sim-card-item {
+    position: relative;
+}
+
+.sim-switch-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: var(--warning-color);
+    border: 1px solid var(--warning-dark);
+    border-radius: 12px;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.sim-switch-badge svg {
+    width: 10px;
+    height: 10px;
+}
+
+.sim-switch-badge:hover {
+    background: var(--warning-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
 .sim-label {

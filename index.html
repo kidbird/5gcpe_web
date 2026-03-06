@@ -136,6 +136,28 @@
             <div class="content" id="content-area">
                 <!-- 设备状态 -->
                 <section class="module-page active" id="page-status">
+                    <div class="info-section">
+                        <h3 class="section-title">设备信息</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">设备型号</span>
+                                <span class="info-value">CPE-5G01</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">固件版本</span>
+                                <span class="info-value">V2.1.5</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">IMEI</span>
+                                <span class="info-value">861234567890123</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">ICCID</span>
+                                <span class="info-value">8986012345678901234</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="status-cards">
                         <div class="status-card">
                             <div class="status-icon online">
@@ -147,6 +169,17 @@
                             <div class="status-info">
                                 <span class="status-label">设备状态</span>
                                 <span class="status-value online">在线</span>
+                            </div>
+                            <div class="status-link-toggle" id="device-link-toggle">
+                                <span class="link-toggle-text" id="device-link-type">蜂窝网络</span>
+                                <svg class="link-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                                <div class="link-toggle-dropdown" id="link-toggle-dropdown">
+                                    <div class="link-toggle-option" data-type="cellular">蜂窝网络</div>
+                                    <div class="link-toggle-option" data-type="wired">有线网络</div>
+                                    <div class="link-toggle-option" data-type="bridge">无线桥接</div>
+                                </div>
                             </div>
                         </div>
                         <div class="status-card">
@@ -233,33 +266,20 @@
                     </div>
                     
                     <div class="info-section">
-                        <h3 class="section-title">设备信息</h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">设备型号</span>
-                                <span class="info-value">CPE-5G01</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">固件版本</span>
-                                <span class="info-value">V2.1.5</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">IMEI</span>
-                                <span class="info-value">861234567890123</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">ICCID</span>
-                                <span class="info-value">8986012345678901234</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-section">
                         <h3 class="section-title">蜂窝网络</h3>
                         <div class="sim-status">
-                            <div class="sim-info-item">
-                                <span class="sim-label">SIM卡状态</span>
-                                <span class="sim-value success">已插入</span>
+                            <div class="sim-info-item sim-card-item">
+                                <span class="sim-label">SIM卡</span>
+                                <span class="sim-value success" id="active-sim">SIM卡1 - 已插入</span>
+                                <div class="sim-switch-badge" id="sim-switch-btn" title="切换SIM卡">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="17 1 21 5 17 9"></polyline>
+                                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                                        <polyline points="7 23 3 19 7 15"></polyline>
+                                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                                    </svg>
+                                    <span>切换</span>
+                                </div>
                             </div>
                             <div class="sim-info-item">
                                 <span class="sim-label">运营商</span>
