@@ -1,7 +1,6 @@
 CC ?= gcc
 CROSS_COMPILE ?=
 
-CC = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
 STRIP = $(CROSS_COMPILE)strip
 
